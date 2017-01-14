@@ -1,8 +1,7 @@
 module Math
-  TAU = PI * 2
-  HALF_TAU = TAU / 2
-  QUARTER_TAU = TAU / 4
-  THREE_QUARTER_TAU = TAU * 3 / 4
+  TWO_PI = 2 * PI
+  PI_HALVES = PI / 2
+  THREE_PI_HALVES = 3 * PI / 2
 end
 
 require "ffi-portaudio"

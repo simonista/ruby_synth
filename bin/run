@@ -11,47 +11,47 @@ class Angular
  
   def freq=(arg)
     @freq = arg
-    @angle_rate = Math::TAU * @freq / @srate
+    @angle_rate = Math::TWO_PI * @freq / @srate
   end  
  
   def update
     @angle += @angle_rate
-    @angle -= Math::TAU if @angle > Math::TAU
+    @angle -= Math::TWO_PI if @angle > Math::TWO_PI
   end
  
   def ticks(samples)
-    samples.times.map{ update; tick }
+    samples.times.map{ update; tick(@angle) }
   end
 end
 
 class Sine < Angular
-  def tick
-    Math.sin(@angle)
+  def tick(angle)
+    Math.sin(angle)
   end
 end
 
 class Square < Angular
-  def tick
-    @angle < Math::HALF_TAU ? 1.0 : -1.0
+  def tick(angle)
+    angle < Math::PI ? 1.0 : -1.0
   end
 end
 
 class Sawtooth < Angular
-  def tick
-    res = @angle / Math::HALF_TAU
+  def tick(angle)
+    res = angle / Math::PI
     res -= 2 if res > 1
     res
   end
 end
 
 class Triangle < Angular
-  def tick
-    if @angle < Math::QUARTER_TAU
-      @angle / Math::QUARTER_TAU
-    elsif @angle < Math::THREE_QUARTER_TAU
-      @angle / -Math::QUARTER_TAU + 2
+  def tick(angle)
+    if angle < Math::PI_HALVES
+      angle / Math::PI_HALVES
+    elsif angle < Math::THREE_PI_HALVES
+      angle / -Math::PI_HALVES + 2
     else
-      @angle / Math::QUARTER_TAU - 4
+      angle / Math::PI_HALVES - 4
     end
   end
 end
@@ -73,10 +73,19 @@ require 'io/console'
 require 'ruby_synth'
 
 puts "starting"
+stream = RubySynth::AudioStream.new(Square.new)
+sleep(1)
+stream.synth = Sine.new
+sleep(1)
+stream.synth = Sawtooth.new
+sleep(1)
+stream.synth = Triangle.new
+sleep(1)
+
+exit
+
 s1 = Sine.new
-s2 = Sine.new(554.37)
-s3 = Sine.new(659.25)
-stream = RubySynth::AudioStream.new(Additive.new([s1, s2, s3]))
+stream = RubySynth::AudioStream.new(s1)
 
 FREQ_INC = 1.05946309 # ~ 12th root of two
 
