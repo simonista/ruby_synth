@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+
+puts "starting"
+
+stream = RubySynth::AudioStream.new
+
+s1 = RubySynth::Sine.new(frequency: 220.0)
+s2 = RubySynth::Sine.new(frequency: 277.18)
+s3 = RubySynth::Sine.new(frequency: 329.63)
+s4 = RubySynth::Sine.new(frequency: 415.30)
+
+stream.load(RubySynth::Additive.new([s1]))
+sleep(2)
+stream.load(RubySynth::Additive.new([s1, s2]))
+sleep(2)
+stream.load(RubySynth::Additive.new([s1, s2, s3]))
+sleep(2)
+stream.load(RubySynth::Additive.new([s1, s2, s3, s4]))
+sleep(2)

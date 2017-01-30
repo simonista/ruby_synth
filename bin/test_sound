@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+require 'io/console'
+
+puts "starting"
+
+stream = RubySynth::AudioStream.new
+stream.gain = 0.1
+stream.load(RubySynth::Square.new)
+
+VOLUP = ['=', '+']
+VOLDOWN = ['-', '_']
+
+counter = 0
+
+STDIN.raw do |i|
+  loop do
+    begin
+      c = i.read_nonblock(1)
+      if VOLUP.include?(c)
+        stream.gain = [stream.gain + 0.1, 1.0].min
+      elsif VOLDOWN.include?(c)
+        stream.gain = [stream.gain - 0.1, 0.0].max
+      end
+      exit(0) if c == 'q'
+      exit(1) if c == "\u0003"
+    rescue Errno::EINTR
+    rescue Errno::EAGAIN
+    rescue EOFError
+      exit(0)
+    end
+
+    if counter % 100 == 0
+      print "\r\033[K#{stream.generator.class.name} | VOL:#{stream.gain.round(1)} | FREQ:#{stream.generator.frequency.round(2)}"
+    end
+    counter += 1
+
+    sleep 0.001
+  end
+end

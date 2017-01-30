@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+require 'io/console'
+
+puts "starting"
+
+stream = RubySynth::AudioStream.new
+s1 = RubySynth::Sine.new
+stream.load(s1)
+
+FREQ_INC = 1.05946309 # ~ 12th root of two
+
+counter = 0
+start = Time.now.to_i
+
+STDIN.raw do |i|
+  loop do
+    begin
+      c = i.read_nonblock(1)
+      s1.frequency *= FREQ_INC if c == 'u'
+      s1.frequency /= FREQ_INC if c == 'd'
+      exit(0) if c == 'q'
+      exit(1) if c == "\u0003"
+    rescue Errno::EINTR
+    rescue Errno::EAGAIN
+    rescue EOFError
+      exit(0)
+    end
+
+    if counter % 100 == 0
+      print "\r\033[Kiterations / second: #{(counter.to_f / (Time.now.to_i - start)).round(1)}"
+    end
+    counter += 1
+
+    sleep 0.001
+  end
+end

@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+require 'io/console'
+
+puts "starting"
+
+KEYS = {
+  'R'   => 0,
+  'C3'  => 130.81,
+  'C#3' => 138.59,
+  'D3'  => 146.83,
+  'D#3' => 155.56,
+  'E3'  => 164.81,
+  'F3'  => 174.61,
+  'F#3' => 185.00,
+  'G3'  => 196.00,
+  'G#3' => 207.65,
+  'A3'  => 220.00,
+  'A#3' => 233.08,
+  'B3'  => 246.94,
+  'C4'  => 261.63,
+  'C#4' => 277.18,
+  'D4'  => 293.66,
+  'D#4' => 311.13,
+  'E4'  => 329.63,
+  'F4'  => 349.23,
+  'F#4' => 369.99,
+  'G4'  => 392.00,
+  'G#4' => 415.30,
+  'A4'  => 440.00,
+  'A#4' => 466.16,
+  'B4'  => 493.88,
+  'C5'  => 523.25,
+  'C#5' => 554.37,
+  'D5'  => 587.33,
+  'D#5' => 622.25,
+  'E5'  => 659.25,
+  'F5'  => 698.46,
+  'F#5' => 739.99,
+  'G5'  => 783.99,
+  'G#5' => 830.61,
+  'A5'  => 880.00
+}
+
+ode_to_joy = %w(
+  E3 E3 F3 G3
+  G3 F3 E3 D3
+  C3 C3 D3 E3
+  E3 D3 D3 D3
+)
+
+mario = %w(
+  E5 E5 R E5 R C5 E5 R
+  G5 G5 R R G4 G4 R R
+  C5 C5 R G4 R R E4 E4
+  R A4 R B4 R A#4 A4 A4
+  G4 C5 G5 G#5 A5 A5 F5 G5
+  R E5 R C5 D5 B4 R R
+)
+
+tempo = 350 # bpm
+counter = 0
+current_note = 0
+notes_per_second = 60.0 / tempo
+notes = mario
+
+stream = RubySynth::AudioStream.new
+s1 = RubySynth::Triangle.new(frequency: KEYS[notes[current_note]])
+# Uncomment to hear better note differentiation
+# s1 = RubySynth::Note.new(
+#   RubySynth::Triangle.new(frequency: KEYS[notes[current_note]])
+# )
+stream.load(s1)
+start = Time.now.to_f
+
+loop do
+  curr = Time.now.to_f
+  if (curr - start) > notes_per_second * (current_note + 1)
+    current_note += 1
+    break if current_note == notes.length
+    s1.frequency = KEYS[notes[current_note]]
+  end
+
+  if counter % 100 == 0
+    #print "\r\033[Kiterations / second: #{(counter.to_f / (Time.now.to_f - start)).round(1)}"
+  end
+  counter += 1
+
+  sleep 0.001
+end

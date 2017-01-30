@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+require 'io/console'
+
+puts "starting"
+
+stream = RubySynth::AudioStream.new
+GENS = {
+  'z' => RubySynth::Sine.new(frequency: 130.81),
+  'x' => RubySynth::Square.new,
+  'c' => RubySynth::Sawtooth.new,
+  'v' => RubySynth::Triangle.new,
+  'b' => RubySynth::Arpeggio.new(RubySynth::Sine.new)
+}
+GENS_KEYS = GENS.keys
+#stream.load(GENS['z'])
+
+KEYS = {
+  'a' => 130.81,
+  'w' => 138.59,
+  's' => 146.83,
+  'e' => 155.56,
+  'd' => 164.81,
+  'f' => 174.61,
+  't' => 185.00,
+  'g' => 196.00,
+  'y' => 207.65,
+  'h' => 220.00,
+  'u' => 233.08,
+  'j' => 246.94,
+  'k' => 261.63
+}
+KEYS_KEYS = KEYS.keys
+
+VOLUP = ['=', '+']
+VOLDOWN = ['-', '_']
+
+counter = 0
+start = Time.now.to_i
+keydown = nil
+
+STDIN.raw do |i|
+  loop do
+    begin
+      c = i.read_nonblock(1)
+      if KEYS_KEYS.include?(c)
+        stream.generator.frequency = KEYS[c]
+      elsif GENS_KEYS.include?(c)
+        gen = GENS[c]
+        gen.frequency = stream.generator.frequency
+        stream.load(gen)
+      elsif VOLUP.include?(c)
+        stream.gain = [stream.gain + 0.1, 1.0].min
+      elsif VOLDOWN.include?(c)
+        stream.gain = [stream.gain - 0.1, 0.0].max
+      end
+      exit(0) if c == 'q'
+      exit(1) if c == "\u0003"
+    rescue Errno::EINTR
+    rescue Errno::EAGAIN
+    rescue EOFError
+      exit(0)
+    end
+
+    if counter % 100 == 0
+      print "\r\033[K#{stream.generator.class.name} | VOL:#{stream.gain.round(1)} | FREQ:#{stream.generator.frequency.round(2)}"
+    end
+    counter += 1
+
+    sleep 0.001
+  end
+end

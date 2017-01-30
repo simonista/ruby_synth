@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require 'ruby_synth'
+
+puts "starting"
+
+stream = RubySynth::AudioStream.new
+
+puts "sine"
+stream.load(RubySynth::Sine.new)
+sleep(1)
+
+puts "triangle"
+stream.load(RubySynth::Triangle.new)
+sleep(1)
+
+puts "square"
+stream.load(RubySynth::Square.new)
+sleep(1)
+
+puts "sawtooth"
+stream.load(RubySynth::Sawtooth.new)
+sleep(1)
